@@ -1,2 +1,2 @@
 # nba_dash
-Simple example dashboard build with dash for python. 
+Simple dash for python example dashboard showing nba player career stats in a table with interactive plots.
