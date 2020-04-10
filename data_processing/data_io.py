@@ -1,6 +1,6 @@
 from nba_api.stats.endpoints import playercareerstats, commonallplayers
 import pandas as pd
-import constants as ct
+import data_processing.constants as ct
 
 
 def list_players_with_ids(search_term):
@@ -35,7 +35,10 @@ def get_player_stats(player_id):
 def aggregate_seasons_for_plotting(df):
     agg_df = df[ct.aggregations["sum"]+["SEASON_ID"]].groupby("SEASON_ID").agg("sum").reset_index()
     for i in ct.aggregations["calculate"]:
-        agg_df[i] = round(agg_df[i.split("_")[0]+"M"] / agg_df[i.split("_")[0]+"A"],3)
+        try:
+            agg_df[i] = round(agg_df[i.split("_")[0]+"M"] / agg_df[i.split("_")[0]+"A"],3)
+        except Exception as e:
+            print(f"column not generated in aggregation because of exception: {e}")
     agg_df["SEASON"] = [int(i.split("-")[0]) for i in agg_df["SEASON_ID"]]
     agg_df = agg_df.fillna(0).drop("SEASON_ID", axis=1)
     agg_df = pd.melt(agg_df, id_vars=['SEASON'])

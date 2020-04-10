@@ -7,8 +7,8 @@ import dash_table
 import plotly.express as px
 import pandas
 from nba_api.stats.endpoints import playercareerstats, commonallplayers
-import data_io
-import constants as ct
+import data_processing.data_io as data_io
+import data_processing.constants as ct
 
 external_stylesheets = ['https://codepen.io/ericthayer/pen/1b88027d0220b52e07214fff4610e7ba.scss']
 
