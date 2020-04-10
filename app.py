@@ -1,73 +1,115 @@
 import dash
+import dash_table
 import dash_core_components as dcc
 import dash_html_components as html
 from dash.dependencies import Input, Output
 from dash.exceptions import PreventUpdate
-import dash_table
 import plotly.express as px
 import pandas
 from nba_api.stats.endpoints import playercareerstats, commonallplayers
 import data_processing.data_io as data_io
 import data_processing.constants as ct
 
-external_stylesheets = ['https://codepen.io/ericthayer/pen/1b88027d0220b52e07214fff4610e7ba.scss']
+external_stylesheets = ["https://codepen.io/ericthayer/pen/1b88027d0220b52e07214fff4610e7ba.scss"]
 
 app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
 
 table_cols_values = ct.table_cols_values
+colors = {"text": "#0c0540"}
 
 app.layout = html.Div([
+    html.H1("NBA Player Stats",
+            style={
+                   "textAlign": "center",
+                   "color": colors["text"]
+            }
+    ),
     
-    dcc.Markdown('''
-                 ### NBA Player Data
-                 Enter player's name and select player from drop down:
-                 '''),
+    html.Div(f"Collected career data of {len(data_io.list_players_with_ids(str()))} players.", 
+             style={
+                    "textAlign": "center", 
+                    "color": colors["text"]
+             }
+    ),
     
+    html.Label("Enter player name or select from drop down:"),
+
     dcc.Dropdown(
-                id='chosen-player', 
+                id="selected-player", 
                 options=data_io.list_players_with_ids("")
-                ),
+    ),
+
+    html.Label("Select regular season or playoffs:"),
+
+    dcc.Dropdown(
+                id="selected-data-set", 
+                options=[{"label": "Regular Season", "value": "SeasonTotalsRegularSeason"},
+                         {"label": "Playoffs", "value": "SeasonTotalsPostSeason"}]
+    ),
 
     html.Hr(),
     
-    dcc.Graph(id='result-graph'),
+    dcc.Graph(id="result-graph"),
     
-    dash_table.DataTable(id='player_table',
+    html.Hr(),
+    
+    html.Label("Select columns to plot:"),
+    
+    dash_table.DataTable(id="player_table",
                          columns=[{"name": i, "id": i, "selectable": True} for i in table_cols_values],
                          data=[],
-                         filter_action='native',
-                         sort_action='native',
-                         sort_mode='single',
-                         column_selectable='multi',
-                         selected_columns=['AST','PTS','MIN','REB'],
+                         filter_action="native",
+                         sort_action="native",
+                         sort_mode="single",
+                         column_selectable="multi",
+                         selected_columns=["AST", "PTS", "MIN", "REB"],
                          selected_rows=[],
-                         tooltip=ct.tooltip                         
-                        )
+                         tooltip=ct.tooltip
+    ),
+    
+    dcc.Markdown("apis provided by https://github.com/swar/nba_api")
 ])
 
 
 @app.callback(
-    Output('player_table', 'data'),
-    [Input('chosen-player', 'value')])
-def update_table(selected_player):
-        if selected_player is None:
+    Output("player_table", "data"),
+    [Input("selected-player", "value"), 
+     Input("selected-data-set", "value")]) 
+def update_table(selected_player, selected_data_set):
+        if selected_player is None or selected_data_set is None:
             raise PreventUpdate
         else:
-            return data_io.get_player_stats(str(selected_player))["SeasonTotalsRegularSeason"][table_cols_values].to_dict(orient="records")
+            return data_io.get_player_stats(str(selected_player))[selected_data_set][table_cols_values].to_dict(orient="records")
 
 
 @app.callback(
-    Output('result-graph', 'figure'),
-    [Input('player_table', 'selected_columns'), Input('chosen-player', 'value')])
-def update_figure2(selected_columns, selected_player):
-    if selected_player is None or selected_columns is None:
+    Output("result-graph", "figure"),
+    [Input("player_table", "selected_columns"), 
+     Input("selected-player", "value"), 
+     Input("selected-data-set", "value")])
+def update_figure(selected_columns, selected_player, selected_data_set):
+    if selected_player is None or selected_columns is None or selected_data_set is None:
         raise PreventUpdate
     else:
-        player_stats = data_io.get_player_stats(str(selected_player))["SeasonTotalsRegularSeason"]
+        player_stats = data_io.get_player_stats(str(selected_player))[selected_data_set]
         agg_player_stats = data_io.aggregate_seasons_for_plotting(player_stats)
         agg_player_stats = agg_player_stats[agg_player_stats["variable"].isin(selected_columns)]
-        return px.line(agg_player_stats,'SEASON', "value", color="variable")
+        if len(agg_player_stats["value"]) > 0:
+            y_upper_bound = max(agg_player_stats["value"])
+        else: 
+            y_upper_bound = 1
+        if y_upper_bound > 1:
+            y_upper_bound +=100
+        else:
+            y_upper_bound += 0.1
+        return px.line(agg_player_stats,
+                       "season", 
+                       "value", 
+                       color="variable", 
+                       render_mode="svg", 
+                       range_y=(0, y_upper_bound), 
+                       template="plotly+presentation+xgridoff")
 
 
-if __name__ == '__main__':
-    app.run_server(debug=True)
+if __name__ == "__main__":
+    app.run_server(host="0.0.0.0")
