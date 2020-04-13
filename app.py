@@ -4,9 +4,6 @@ import dash_core_components as dcc
 import dash_html_components as html
 from dash.dependencies import Input, Output
 from dash.exceptions import PreventUpdate
-import plotly.express as px
-import pandas
-from nba_api.stats.endpoints import playercareerstats, commonallplayers
 import data_processing.data_io as data_io
 import data_processing.constants as ct
 import data_processing.plotting as plotting
