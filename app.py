@@ -9,6 +9,7 @@ import pandas
 from nba_api.stats.endpoints import playercareerstats, commonallplayers
 import data_processing.data_io as data_io
 import data_processing.constants as ct
+import data_processing.plotting as plotting
 
 external_stylesheets = ["https://codepen.io/ericthayer/pen/1b88027d0220b52e07214fff4610e7ba.scss"]
 
@@ -91,24 +92,7 @@ def update_figure(selected_columns, selected_player, selected_data_set):
     if selected_player is None or selected_columns is None or selected_data_set is None:
         raise PreventUpdate
     else:
-        player_stats = data_io.get_player_stats(str(selected_player))[selected_data_set]
-        agg_player_stats = data_io.aggregate_seasons_for_plotting(player_stats)
-        agg_player_stats = agg_player_stats[agg_player_stats["variable"].isin(selected_columns)]
-        if len(agg_player_stats["value"]) > 0:
-            y_upper_bound = max(agg_player_stats["value"])
-        else: 
-            y_upper_bound = 1
-        if y_upper_bound > 1:
-            y_upper_bound +=100
-        else:
-            y_upper_bound += 0.1
-        return px.line(agg_player_stats,
-                       "season", 
-                       "value", 
-                       color="variable", 
-                       render_mode="svg", 
-                       range_y=(0, y_upper_bound), 
-                       template="plotly+presentation+xgridoff")
+        return plotting.plot_career_stats(selected_player, selected_data_set, selected_columns)
 
 
 if __name__ == "__main__":

@@ -3,12 +3,6 @@ table_cols_values = ["SEASON_ID", "TEAM_ABBREVIATION",
                      "FG3_PCT", "FTM", "FTA", "FT_PCT", "OREB", "DREB", "REB", "AST", "STL",
                      "BLK", "TOV", "PF", "PTS"]
 
-table_cols_rank = ["PLAYER_ID", "SEASON_ID", "LEAGUE_ID", "TEAM_ID", "TEAM_ABBREVIATION",
-                   "PLAYER_AGE", "GP", "GS", "RANK_MIN", "RANK_FGM", "RANK_FGA",
-                   "RANK_FG_PCT", "RANK_FG3M", "RANK_FG3A", "RANK_FG3_PCT", "RANK_FTM",
-                   "RANK_FTA", "RANK_FT_PCT", "RANK_OREB", "RANK_DREB", "RANK_REB",
-                   "RANK_AST", "RANK_STL", "RANK_BLK", "RANK_TOV", "RANK_PTS", "RANK_EFF"]
-
 tooltip = {"GP":{"value":"games played"},
            "GS":{"value":"games started"},
            "MIN":{"value":"minutes"},
